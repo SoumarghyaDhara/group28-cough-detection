@@ -2,7 +2,6 @@ import streamlit as st
 import pickle
 import numpy as np
 import librosa
-from sklearn.preprocessing import StandardScaler
 
 # Step 1: Load the model
 @st.cache(allow_output_mutation=True)
@@ -59,16 +58,21 @@ def main():
         # Extract features from the audio file
         features = features_extractor(audio_file)
 
+        # Debugging: Display feature shape
+        st.write(f"Feature shape: {features.shape}")
+
         # Reshape the features for prediction (should be 2D array)
         features = features.reshape(1, -1)
 
         # Predict and display the result
-        if st.button("Predict"):
+        try:
             prediction = model.predict(features)
             if prediction[0] == 1:
                 st.success("Cough detected!")
             else:
                 st.info("No cough detected.")
+        except Exception as e:
+            st.error(f"Error during prediction: {e}")
 
 if __name__ == "__main__":
     main()
