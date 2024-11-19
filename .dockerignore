@@ -1,0 +1,32 @@
+# Python cache files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+
+# Virtual environments
+venv/
+env/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Git files
+.git/
+.gitignore
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+
+# Streamlit secrets and config
+.streamlit/secrets.toml
+
+# Docker-related files
+Dockerfile
+docker-compose.yml
