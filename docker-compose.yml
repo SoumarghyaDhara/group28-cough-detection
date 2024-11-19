@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  streamlit-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    environment:
+      - APP_PORT=${APP_PORT}
+      - MODEL_FILE=${MODEL_FILE}
+    volumes:
+      - .:/app
