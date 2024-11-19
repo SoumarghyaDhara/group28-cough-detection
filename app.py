@@ -1,6 +1,8 @@
 import streamlit as st
 import pickle
 import numpy as np
+import librosa
+from sklearn.preprocessing import StandardScaler
 
 # Step 1: Load the model
 @st.cache(allow_output_mutation=True)
@@ -9,7 +11,39 @@ def load_model():
         model = pickle.load(file)
     return model
 
-# Step 2: Define the main function
+# Step 2: Extract features from the audio file
+def features_extractor(file_name):
+    audio, sample_rate = librosa.load(file_name)
+
+    # MFCCs (Mel-frequency cepstral coefficients)
+    mfccs_features = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=16)
+    mfccs_scaled_features = np.mean(mfccs_features.T, axis=0)
+
+    # Mel Spectrogram
+    mel_spectrogram = librosa.feature.melspectrogram(y=audio, sr=sample_rate, n_fft=2048, hop_length=512, n_mels=10)
+    mel_scaled_features = np.mean(mel_spectrogram.T, axis=0)
+
+    # Zero Crossing Rate
+    zcr = librosa.feature.zero_crossing_rate(audio)
+    zcr_scaled_features = np.mean(zcr.T, axis=0)
+
+    # Spectral Centroid
+    spectral_centroid = librosa.feature.spectral_centroid(y=audio, sr=sample_rate)
+    spectral_centroid_scaled_features = np.mean(spectral_centroid.T, axis=0)
+
+    # Spectral Roll-off
+    spectral_rolloff = librosa.feature.spectral_rolloff(y=audio, sr=sample_rate)
+    spectral_rolloff_scaled_features = np.mean(spectral_rolloff.T, axis=0)
+
+    # Chroma Feature
+    stft = np.abs(librosa.stft(audio))
+    chroma = librosa.feature.chroma_stft(S=stft, sr=sample_rate)
+    chroma_scaled_features = np.mean(chroma.T, axis=0)
+
+    # Return all the features as a single list
+    return np.hstack((mfccs_scaled_features, mel_scaled_features, zcr_scaled_features, spectral_centroid_scaled_features, spectral_rolloff_scaled_features, chroma_scaled_features))
+
+# Step 3: Define the main function
 def main():
     st.title("Cough Detection Model")
     st.write("This app predicts whether the input corresponds to a cough sound.")
@@ -17,23 +51,24 @@ def main():
     # Load the model
     model = load_model()
 
-    # Input features
-    st.header("Input Features")
-    feature1 = st.number_input("Feature 1 (e.g., MFCC1):")
-    feature2 = st.number_input("Feature 2 (e.g., MFCC2):")
-    feature3 = st.number_input("Feature 3 (e.g., ZCR):")
-    feature4 = st.number_input("Feature 4 (e.g., Spectral Centroid):")
+    # Audio file input
+    st.header("Upload an Audio File")
+    audio_file = st.file_uploader("Choose an audio file", type=["wav", "mp3"])
 
-    # Combine features into a NumPy array
-    features = np.array([[feature1, feature2, feature3, feature4]])
+    if audio_file is not None:
+        # Extract features from the audio file
+        features = features_extractor(audio_file)
 
-    # Predict and display the result
-    if st.button("Predict"):
-        prediction = model.predict(features)
-        if prediction[0] == 1:
-            st.success("Cough detected!")
-        else:
-            st.info("No cough detected.")
+        # Reshape the features for prediction (should be 2D array)
+        features = features.reshape(1, -1)
+
+        # Predict and display the result
+        if st.button("Predict"):
+            prediction = model.predict(features)
+            if prediction[0] == 1:
+                st.success("Cough detected!")
+            else:
+                st.info("No cough detected.")
 
 if __name__ == "__main__":
     main()
