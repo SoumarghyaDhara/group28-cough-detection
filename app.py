@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import numpy as np
 import librosa
+import io
 
 # Step 1: Load the model
 @st.cache(allow_output_mutation=True)
@@ -11,8 +12,9 @@ def load_model():
     return model
 
 # Step 2: Extract features from the audio file
-def features_extractor(file_name):
-    audio, sample_rate = librosa.load(file_name)
+def features_extractor(file):
+    # Load the audio file from the Streamlit uploader (it is a byte object, so we need to handle it correctly)
+    audio, sample_rate = librosa.load(file, sr=None)  # sr=None keeps the original sample rate of the file
 
     # MFCCs (Mel-frequency cepstral coefficients)
     mfccs_features = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=16)
@@ -74,5 +76,5 @@ def main():
         except Exception as e:
             st.error(f"Error during prediction: {e}")
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     main()
