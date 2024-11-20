@@ -7,9 +7,16 @@ import io
 # Step 1: Load the model
 @st.cache(allow_output_mutation=True)
 def load_model():
-    with open("cough_detection_model.pkl", "rb") as file:
-        model = pickle.load(file)
-    return model
+    try:
+        with open("cough_detection_model.pkl", "rb") as file:
+            model = pickle.load(file)
+            # Verify the model has a predict method
+            if not hasattr(model, "predict"):
+                raise ValueError("Loaded object is not a valid model with a predict method.")
+            return model
+    except Exception as e:
+        st.error(f"Error loading the model: {e}")
+        return None
 
 # Step 2: Extract features from the audio file
 def features_extractor(file):
@@ -51,6 +58,10 @@ def main():
 
     # Load the model
     model = load_model()
+
+    if model is None:
+        st.error("The model could not be loaded. Please check the model file.")
+        return
 
     # Audio file input
     st.header("Upload an Audio File")
