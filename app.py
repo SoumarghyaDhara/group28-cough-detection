@@ -71,8 +71,8 @@ def main():
                 st.success("Cough detected!")
             else:
                 st.info("No cough detected.")
-        # except Exception as e:
-        #     st.error(f"Error during prediction: {e}")
+        except Exception as e:
+            st.error(f"Error during prediction: {e}")
 
 if __name__ == "__main__":
     main()
